@@ -5,14 +5,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-    const {
-        address,
-        getUserAddress,
-        sendCUSD,
-        mintMinipayNFT,
-        getNFTs,
-        signTransaction,
-    } = useWeb3();
+    const { address, getUserAddress, sendCUSD, mintMinipayNFT, getNFTs, signTransaction } = useWeb3();
     const [cUSDLoading, setCUSDLoading] = useState(false);
     const [nftLoading, setNFTLoading] = useState(false);
     const [signingLoading, setSigningLoading] = useState(false);
@@ -72,27 +65,49 @@ export default function Home() {
         }
     }
 
+    async function connect() {
+        // The code must run in a browser environment and not in node environment
+        console.log("connecting...");
+        if (window && window.ethereum) {
+            // User has a injected wallet
+
+            if (window.ethereum.isMinipay) {
+                // User is using Minipay
+
+                // Requesting account addresses
+                let accounts = await window.ethereum.request({
+                    method: "eth_requestAccounts",
+                    params: [],
+                });
+
+                // Injected wallets inject all available addresses,
+                // to comply with API Minipay injects one address but in the form of array
+                console.log(accounts[0]);
+            }
+
+            // User is not using MiniPay
+            console.log("You're not using Minipay!");
+        }
+    }
+
     return (
         <div className="flex flex-col justify-center items-center">
-            {!address && (
-                <div className="h1">Please install Metamask and connect.</div>
-            )}
-            {address && (
-                <div className="h1">
-                    There you go... a canvas for your next Minipay project!
-                </div>
-            )}
+            <div className="w-full px-3 mt-5">
+                <PrimaryButton onClick={connect} title="Connect MiniPay" widthFull />
+                <p>See console if nothing happens.</p>
+            </div>
+
+            {!address && <div className="h1">Please install Metamask and connect.</div>}
+            {address && <div className="h1">There you go... a canvas for your next Minipay project!</div>}
 
             {address && (
                 <>
                     <div className="h2 text-center">
-                        Your address:{" "}
-                        <span className="font-bold text-sm">{address}</span>
+                        Your address: <span className="font-bold text-sm">{address}</span>
                     </div>
                     {tx && (
                         <p className="font-bold mt-4">
-                            Tx Completed:{" "}
-                            {(tx.transactionHash as string).substring(0, 6)}
+                            Tx Completed: {(tx.transactionHash as string).substring(0, 6)}
                             ...
                             {(tx.transactionHash as string).substring(
                                 tx.transactionHash.length - 6,
@@ -110,12 +125,7 @@ export default function Home() {
                     </div>
 
                     <div className="w-full px-3 mt-6">
-                        <PrimaryButton
-                            loading={cUSDLoading}
-                            onClick={signMessage}
-                            title="Sign a Message"
-                            widthFull
-                        />
+                        <PrimaryButton loading={cUSDLoading} onClick={signMessage} title="Sign a Message" widthFull />
                     </div>
 
                     {userOwnedNFTs.length > 0 ? (
@@ -123,10 +133,7 @@ export default function Home() {
                             <p className="font-bold">My NFTs</p>
                             <div className="w-full grid grid-cols-2 gap-3 mt-3 px-2">
                                 {userOwnedNFTs.map((tokenURI, index) => (
-                                    <div
-                                        key={index}
-                                        className="p-2 border-[3px] border-colors-secondary rounded-xl"
-                                    >
+                                    <div key={index} className="p-2 border-[3px] border-colors-secondary rounded-xl">
                                         <Image
                                             alt="MINIPAY NFT"
                                             src={tokenURI}
@@ -143,12 +150,7 @@ export default function Home() {
                     )}
 
                     <div className="w-full px-3 mt-5">
-                        <PrimaryButton
-                            loading={nftLoading}
-                            onClick={mintNFT}
-                            title="Mint Minipay NFT"
-                            widthFull
-                        />
+                        <PrimaryButton loading={nftLoading} onClick={mintNFT} title="Mint Minipay NFT" widthFull />
                     </div>
                 </>
             )}
